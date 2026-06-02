@@ -1,19 +1,19 @@
-import { getStatusMeta } from "@/lib/deal-status";
-import type { Deal, DealStatusKey } from "@/lib/types";
-import { MilestoneChips } from "./milestone-chips";
+import { getProjectStatusMeta } from "@/lib/project-status";
+import type { Project } from "@/lib/types";
+import { StageChips } from "./stage-chips";
 import { StatusPill } from "./status-pill";
 
-interface DealCardProps {
-  deal: Deal;
-  statusKey: DealStatusKey;
+interface ProjectCardProps {
+  project: Project;
 }
 
-export function DealCard({ deal, statusKey }: DealCardProps) {
-  const meta = getStatusMeta(statusKey);
-  const needsAction = statusKey === "blocked";
-  const context = deal.blocker
-    ? deal.blocker
-    : [deal.location, deal.nextStep].filter(Boolean).join(" — ");
+export function ProjectCard({ project }: ProjectCardProps) {
+  const meta = getProjectStatusMeta(project.status);
+  const needsAction =
+    project.status === "blocked" || project.status === "at_risk";
+  const context = project.blocker
+    ? project.blocker
+    : [project.note, project.nextStep].filter(Boolean).join(" — ");
 
   return (
     <div
@@ -22,7 +22,7 @@ export function DealCard({ deal, statusKey }: DealCardProps) {
       <div className="min-w-0 flex-1">
         <div className="mb-[9px] flex items-center gap-[11px]">
           <span className="font-display text-[1.02rem] font-bold text-ink">
-            {deal.name}
+            {project.name}
           </span>
           <StatusPill
             label={meta.label}
@@ -31,7 +31,7 @@ export function DealCard({ deal, statusKey }: DealCardProps) {
           />
         </div>
         <div className="flex flex-wrap items-center gap-[15px]">
-          <MilestoneChips milestones={deal.milestones} />
+          <StageChips stages={project.stages} />
           {context && (
             <span className="text-[0.78rem] font-medium text-gray-mid">
               · {context}
@@ -47,7 +47,7 @@ export function DealCard({ deal, statusKey }: DealCardProps) {
             : "border-[1.5px] border-[#ebe6dd] bg-white text-purple"
         }`}
       >
-        {needsAction ? "Send reminder" : "View"}
+        {needsAction ? "Follow up" : "View"}
       </button>
     </div>
   );
