@@ -1,34 +1,36 @@
-# Phase 2 — Web Dashboard
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Polished, branded web app for the sales team. Per-user authenticated view of their deals with full project timelines, invoice status, and Teamwork milestone progression.
+## Getting Started
 
-## Status
+First, run the development server:
 
-**Deferred** until Phase 1 ships and stabilizes. Brainstorm notes captured in `../docs/2026-06-02-brainstorm-notes.md`.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Planned tech stack
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-| Layer | Pick |
-|---|---|
-| Framework | Next.js (App Router) |
-| Styling | Tailwind CSS |
-| Components | shadcn/ui |
-| Animations | Framer Motion |
-| Charts | Recharts or Tremor |
-| Auth | Clerk *or* NextAuth + Google SSO |
-| Database | Supabase (Postgres) |
-| Hosting | Vercel |
-| Data sync | n8n cron workflow → Supabase |
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Planned page structure
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- `/` — Pipeline overview (cards per active deal, filter by stage, search)
-- `/deals/[id]` — Per-deal detail (timeline, invoices, milestones, photo refs, history)
-- `/invoices` — Sortable invoice list
-- `/settings` — Per-user notification preferences
+## Learn More
 
-## Why deferred
+To learn more about Next.js, take a look at the following resources:
 
-1. Phase 1 ships value in days; this would take 4-6 weeks before anything is usable
-2. Phase 1's HubSpot deal-property writeback becomes the data spec for what this dashboard reads — designing Phase 2 first would mean making this same data decision twice
-3. Phase 2 should be informed by what sales actually does with Phase 1 over a few weeks of real use
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
