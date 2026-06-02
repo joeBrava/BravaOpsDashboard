@@ -1,8 +1,8 @@
 interface StatusPillProps {
   label: string;
-  /** bg + text classes from getStatusMeta */
+  /** bg + text classes from a status meta map */
   pillClass: string;
-  /** dot color class from getStatusMeta */
+  /** dot color class from a status meta map */
   dotClass: string;
 }
 
