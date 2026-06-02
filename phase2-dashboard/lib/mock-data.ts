@@ -1,68 +1,79 @@
-import { deriveStatus } from "./deal-status";
-import type { Deal } from "./types";
+import type { Project, ProjectStatusKey } from "./types";
 
-interface RawDeal extends Omit<Deal, "inProduction"> {
-  inProduction?: boolean;
-}
-
-const raw: RawDeal[] = [
+export const projects: Project[] = [
   {
     id: "salt-lake-temple",
     name: "Salt Lake Temple",
     owner: "Joe Z.",
     ownerInitials: "JZ",
-    inProduction: true,
-    milestones: [
-      { key: "design", state: "paid" },
-      { key: "p1", state: "paid" },
-      { key: "p2", state: "pending" },
+    status: "on_track",
+    stages: [
+      { key: "brick", state: "done" },
+      { key: "form", state: "done" },
+      { key: "build", state: "current" },
+      { key: "qa", state: "upcoming" },
+      { key: "ship", state: "upcoming" },
     ],
-    location: "📍 Brick Selection complete",
-    nextStep: "next: Production Form approval",
+    note: "Build underway",
+    nextStep: "next: QA review",
   },
   {
     id: "acme-corp-q3",
     name: "Acme Corp Q3",
     owner: "Miya A.",
     ownerInitials: "MA",
-    milestones: [
-      { key: "design", state: "paid" },
-      { key: "p1", state: "unpaid", note: "(3d)" },
-      { key: "p2", state: "na" },
+    status: "at_risk",
+    stages: [
+      { key: "brick", state: "done" },
+      { key: "form", state: "current" },
+      { key: "build", state: "upcoming" },
+      { key: "qa", state: "upcoming" },
+      { key: "ship", state: "upcoming" },
     ],
-    location: "📍 Design phase",
-    nextStep: "production unlocks when P1 clears",
+    note: "Production Form awaiting approval · 3d",
   },
   {
     id: "big-customer-logo",
     name: "Big Customer Logo",
     owner: "Miya A.",
     ownerInitials: "MA",
-    milestones: [
-      { key: "design", state: "unpaid", note: "(8d)" },
-      { key: "p1", state: "na" },
-      { key: "p2", state: "na" },
+    status: "blocked",
+    stages: [
+      { key: "brick", state: "done" },
+      { key: "form", state: "done" },
+      { key: "build", state: "done" },
+      { key: "qa", state: "current" },
+      { key: "ship", state: "upcoming" },
     ],
-    blocker: "⚠️ Design can't start until the deposit is paid",
+    blocker: "⚠️ QA flagged a color mismatch",
+  },
+  {
+    id: "riverside-plaza",
+    name: "Riverside Plaza",
+    owner: "Joe Z.",
+    ownerInitials: "JZ",
+    status: "shipping",
+    stages: [
+      { key: "brick", state: "done" },
+      { key: "form", state: "done" },
+      { key: "build", state: "done" },
+      { key: "qa", state: "done" },
+      { key: "ship", state: "current" },
+    ],
+    note: "Out for delivery · ETA Fri",
   },
 ];
 
-export const deals: Deal[] = raw.map((d) => ({
-  ...d,
-  inProduction: d.inProduction ?? false,
-}));
-
-/** Convenience: status key per deal (used by the page + cards). */
-export function dealStatusKey(d: Deal) {
-  return deriveStatus(d.milestones, d.inProduction ?? false);
+function countStatus(status: ProjectStatusKey): number {
+  return projects.filter((p) => p.status === status).length;
 }
 
 export const summary = {
-  active: deals.length,
-  readyToMove: 2,
-  blocked: 1,
-  paidYesterday: "$4,250",
+  inProduction: projects.length,
+  onTrack: countStatus("on_track"),
+  needsAttention: countStatus("at_risk") + countStatus("blocked"),
+  shipping: countStatus("shipping"),
 };
 
-export const recentPayment =
-  "💸 Yesterday — Salt Lake Temple P1 payment cleared ($4,250)";
+export const recentUpdate =
+  "📦 Riverside Plaza moved to Shipping — out for delivery today";
