@@ -18,6 +18,11 @@ const workspace: NavItem[] = [
 ];
 const team: NavItem[] = [{ label: "Team view" }, { label: "Settings" }];
 
+/** Drop a trailing slash so `/invoices` and `/invoices/` compare equal (trailingSlash export). */
+function normalizePath(path: string): string {
+  return path.length > 1 ? path.replace(/\/$/, "") : path;
+}
+
 function Item({ item, active }: { item: NavItem; active: boolean }) {
   const className = `mb-[3px] flex items-center gap-[11px] rounded-[10px] px-3 py-[10px] text-sm font-medium ${
     active ? "bg-white/15 font-semibold text-white" : "text-white/80"
@@ -56,7 +61,7 @@ function Section({ label }: { label: string }) {
 }
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = normalizePath(usePathname());
 
   return (
     <aside className="flex w-[212px] flex-none flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[22px] text-white">
@@ -67,7 +72,11 @@ export function Sidebar() {
 
       <Section label="Workspace" />
       {workspace.map((i) => (
-        <Item key={i.label} item={i} active={i.href === pathname} />
+        <Item
+          key={i.label}
+          item={i}
+          active={i.href != null && normalizePath(i.href) === pathname}
+        />
       ))}
 
       <Section label="Team" />
