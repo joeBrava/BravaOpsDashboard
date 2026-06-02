@@ -1,27 +1,26 @@
-export type PaymentState = "paid" | "unpaid" | "pending" | "na";
+export type ProductionStageKey = "brick" | "form" | "build" | "qa" | "ship";
 
-export type MilestoneKey = "design" | "p1" | "p2";
+export type StageState = "done" | "current" | "upcoming";
 
-export interface Milestone {
-  key: MilestoneKey;
-  state: PaymentState;
-  /** short trailing note, e.g. "(8d)" */
-  note?: string;
+export interface ProductionStage {
+  key: ProductionStageKey;
+  state: StageState;
 }
 
-export type DealStatusKey = "in_production" | "ready" | "awaiting" | "blocked";
+export type ProjectStatusKey = "on_track" | "at_risk" | "blocked" | "shipping";
 
-export interface Deal {
+export interface Project {
   id: string;
   name: string;
   owner: string;
   ownerInitials: string;
-  milestones: Milestone[];
-  /** "📍 …" context line */
-  location?: string;
+  stages: ProductionStage[];
+  /** explicit project health (not derived from stages) */
+  status: ProjectStatusKey;
+  /** short context line */
+  note?: string;
+  /** "next: …" line */
   nextStep?: string;
   /** "⚠️ …" blocker line (present when blocked) */
   blocker?: string;
-  /** true once design + P1 are paid and the project is being built */
-  inProduction?: boolean;
 }
