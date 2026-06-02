@@ -1,28 +1,37 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BrandMark } from "./brand-mark";
 
 interface NavItem {
   label: string;
-  active?: boolean;
+  /** present => navigable */
+  href?: string;
   badge?: string;
 }
 
 const workspace: NavItem[] = [
-  { label: "Pipeline", active: true },
+  { label: "Pipeline", href: "/" },
   { label: "All deals" },
-  { label: "Invoices", badge: "2" },
+  { label: "Invoices", href: "/invoices", badge: "2" },
 ];
 const team: NavItem[] = [{ label: "Team view" }, { label: "Settings" }];
 
-function Item({ item }: { item: NavItem }) {
-  return (
-    <div
-      className={`mb-[3px] flex items-center gap-[11px] rounded-[10px] px-3 py-[10px] text-sm font-medium ${
-        item.active ? "bg-white/15 font-semibold text-white" : "text-white/80"
-      }`}
-    >
+/** Drop a trailing slash so `/invoices` and `/invoices/` compare equal (trailingSlash export). */
+function normalizePath(path: string): string {
+  return path.length > 1 ? path.replace(/\/$/, "") : path;
+}
+
+function Item({ item, active }: { item: NavItem; active: boolean }) {
+  const className = `mb-[3px] flex items-center gap-[11px] rounded-[10px] px-3 py-[10px] text-sm font-medium ${
+    active ? "bg-white/15 font-semibold text-white" : "text-white/80"
+  }`;
+  const inner = (
+    <>
       <span
         className={`h-[17px] w-[17px] flex-none rounded-[5px] ${
-          item.active ? "bg-lime" : "bg-white/30"
+          active ? "bg-lime" : "bg-white/30"
         }`}
       />
       <span>{item.label}</span>
@@ -31,7 +40,15 @@ function Item({ item }: { item: NavItem }) {
           {item.badge}
         </span>
       )}
-    </div>
+    </>
+  );
+
+  return item.href ? (
+    <Link href={item.href} className={className}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={className}>{inner}</div>
   );
 }
 
@@ -44,6 +61,8 @@ function Section({ label }: { label: string }) {
 }
 
 export function Sidebar() {
+  const pathname = normalizePath(usePathname());
+
   return (
     <aside className="flex w-[212px] flex-none flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[22px] text-white">
       <div className="mb-[30px] flex items-center gap-[10px] pl-1 font-display text-[1.05rem] font-extrabold">
@@ -53,12 +72,16 @@ export function Sidebar() {
 
       <Section label="Workspace" />
       {workspace.map((i) => (
-        <Item key={i.label} item={i} />
+        <Item
+          key={i.label}
+          item={i}
+          active={i.href != null && normalizePath(i.href) === pathname}
+        />
       ))}
 
       <Section label="Team" />
       {team.map((i) => (
-        <Item key={i.label} item={i} />
+        <Item key={i.label} item={i} active={false} />
       ))}
 
       <div className="mt-auto flex items-center gap-[10px] border-t border-white/15 px-2 py-[10px]">

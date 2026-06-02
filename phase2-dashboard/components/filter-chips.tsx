@@ -1,9 +1,13 @@
-const FILTERS = ["All", "Ready", "Blocked"] as const;
+const DEFAULT_FILTERS = ["All", "Ready", "Blocked"] as const;
 
-export function FilterChips() {
+export function FilterChips({
+  filters = DEFAULT_FILTERS,
+}: {
+  filters?: readonly string[];
+}) {
   return (
     <div className="flex gap-[7px]">
-      {FILTERS.map((f, i) => (
+      {filters.map((f, i) => (
         <span
           key={f}
           className={`rounded-full px-3 py-[5px] font-display text-[0.74rem] font-semibold ${

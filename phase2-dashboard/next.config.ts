@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   output: "export",
   basePath: "/BravaOpsDashboard",
   images: { unoptimized: true },
+  // Emit each route as a directory index (out/invoices/index.html) so GitHub
+  // Pages serves clean URLs like /invoices/ reliably on any static host.
+  trailingSlash: true,
 };
 
 export default nextConfig;
