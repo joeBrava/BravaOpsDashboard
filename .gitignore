@@ -39,3 +39,6 @@ coverage/
 # Misc
 *.tsbuildinfo
 .cache/
+
+# Brainstorm visual companion
+.superpowers/
