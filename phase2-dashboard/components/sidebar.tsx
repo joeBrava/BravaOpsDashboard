@@ -18,7 +18,7 @@ const workspace: NavItem[] = [
   { label: "All deals" },
   { label: "Invoices", href: "/invoices", badge: "2" },
 ];
-const team: NavItem[] = [{ label: "Team view" }, { label: "Settings" }];
+const team: NavItem[] = [{ label: "Team view" }, { label: "Settings", href: "/settings" }];
 
 /** Drop a trailing slash so `/invoices` and `/invoices/` compare equal (trailingSlash export). */
 function normalizePath(path: string): string {
@@ -117,7 +117,11 @@ export function Sidebar({ user }: { user?: SessionUser | null }) {
 
       <Section label="Team" />
       {team.map((i) => (
-        <Item key={i.label} item={i} active={false} />
+        <Item
+          key={i.label}
+          item={i}
+          active={i.href != null && normalizePath(i.href) === pathname}
+        />
       ))}
 
       <ProfileSlot user={effectiveUser} />
