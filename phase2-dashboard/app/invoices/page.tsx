@@ -3,11 +3,17 @@ import { Topbar } from "@/components/topbar";
 import { StatCard } from "@/components/stat-card";
 import { FilterChips } from "@/components/filter-chips";
 import { InvoiceCard } from "@/components/invoice-card";
-import { invoices, invoiceSummary, formatUsd } from "@/lib/invoices";
+import { getSource } from "@/lib/data/source";
+import { invoiceSummary, formatUsd } from "@/lib/invoices";
 
 const INVOICE_FILTERS = ["All", "Overdue", "Pending", "Paid"] as const;
 
-export default function InvoicesPage() {
+export default async function InvoicesPage() {
+  // Invoice rows are read through the DashboardSource adapter (fixture today,
+  // live later). The summary aggregates + formatUsd helper remain derived
+  // presentation data, not part of the source data contract.
+  const invoices = await getSource().getInvoices();
+
   return (
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />

@@ -4,11 +4,17 @@ import { StatCard } from "@/components/stat-card";
 import { FilterChips } from "@/components/filter-chips";
 import { ProjectCard } from "@/components/project-card";
 import { UpdateToast } from "@/components/update-toast";
-import { projects, summary, recentUpdate } from "@/lib/mock-data";
+import { getSource } from "@/lib/data/source";
+import { summary, recentUpdate } from "@/lib/mock-data";
 
 const PRODUCTION_FILTERS = ["All", "On track", "At risk", "Shipping"] as const;
 
-export default function PipelinePage() {
+export default async function PipelinePage() {
+  // Project rows are read through the DashboardSource adapter (fixture today,
+  // live later) so flipping data sources is a single env change. The summary
+  // aggregates + recentUpdate banner remain derived presentation data.
+  const projects = await getSource().getProjects();
+
   return (
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />
