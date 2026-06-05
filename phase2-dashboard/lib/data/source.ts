@@ -1,5 +1,6 @@
 import type { Project, ProjectDetail } from "@/lib/types";
 import type { Invoice } from "@/lib/invoices";
+import { FixtureSource } from "./fixture-source";
 
 /**
  * The single read-only data contract every page/route handler consumes.
@@ -39,43 +40,13 @@ function resolveMode(): DataSourceMode {
  * Returns the active `DashboardSource`.
  *
  * For now this always returns a fixture-backed source (LiveSource is added in
- * Task B4; the `FixtureSource` concrete class arrives in Task A4 and will be
- * imported here, lazily, so fixture mode never pulls in live clients/tokens).
+ * Task B4; the `FixtureSource` concrete class — `lib/data/fixture-source.ts` —
+ * is wired in here as of Task A4). `getSource()` keeps a stable signature so
+ * the live branch can be added in B4 without touching callers.
  */
 export function getSource(): DashboardSource {
   // mode is resolved up front so the live branch can be wired in B4 without
   // changing this signature; today every mode resolves to fixtures.
   void resolveMode();
-  return fixtureSource;
+  return new FixtureSource();
 }
-
-// ---------------------------------------------------------------------------
-// Temporary inline fixture source.
-//
-// This is a minimal, contract-complete stand-in so `source.ts` compiles and
-// `getSource()` works on its own ahead of Task A4. Task A4 replaces this with
-// the real, unit-tested `FixtureSource` in `lib/data/fixture-source.ts` and
-// changes `getSource()` to import it.
-// ---------------------------------------------------------------------------
-const fixtureSource: DashboardSource = {
-  async getProjects(): Promise<Project[]> {
-    const { projects } = await import("@/lib/mock-data");
-    return projects;
-  },
-  async getProject(id: string): Promise<ProjectDetail | null> {
-    const [{ projects }, { invoices }] = await Promise.all([
-      import("@/lib/mock-data"),
-      import("@/lib/invoices"),
-    ]);
-    const project = projects.find((p) => p.id === id);
-    if (!project) return null;
-    return {
-      ...project,
-      invoices: invoices.filter((inv) => inv.dealName === project.name),
-    };
-  },
-  async getInvoices(): Promise<Invoice[]> {
-    const { invoices } = await import("@/lib/invoices");
-    return invoices;
-  },
-};
