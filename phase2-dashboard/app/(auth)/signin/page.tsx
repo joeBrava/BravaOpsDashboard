@@ -18,18 +18,21 @@ export const metadata: Metadata = {
  * authoritative domain lock lives in the Auth.js `signIn` callback
  * (`auth.ts` → `isAllowedGoogleSignIn`); the copy here just sets expectations.
  *
- * When auth is bypassed for local dev (`AUTH_DISABLED=true`) there is no OAuth
- * to run, so we send the visitor straight to the dashboard.
+ * The page itself ALWAYS renders (so `/signin` is reachable and verifiable even
+ * in the dev-bypass smoke gate). When auth is bypassed for local dev
+ * (`AUTH_DISABLED=true`) there is no OAuth to run, so the button just sends the
+ * visitor straight to the dashboard — and we never import the Auth.js config in
+ * that branch, keeping the app runnable with no secrets configured.
  */
 export default function SignInPage() {
-  if (isAuthDisabled()) {
-    redirect("/");
-  }
-
   async function signInWithGoogle() {
     "use server";
-    // Lazy import keeps the Auth.js config (which expects secrets) out of any
-    // bypass-mode render path.
+    if (isAuthDisabled()) {
+      // No OAuth in dev bypass — go straight to the dashboard.
+      redirect("/");
+    }
+    // Lazy import keeps the Auth.js config (which expects secrets) out of the
+    // bypass branch above.
     const { signIn } = await import("@/auth");
     await signIn("google", { redirectTo: "/" });
   }
