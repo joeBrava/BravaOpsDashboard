@@ -1,18 +1,19 @@
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { StatCard } from "@/components/stat-card";
-import { FilterChips } from "@/components/filter-chips";
-import { ProjectCard } from "@/components/project-card";
+import { OwnerFilterToggle } from "@/components/owner-filter-toggle";
 import { UpdateToast } from "@/components/update-toast";
 import { getSource } from "@/lib/data/source";
 import { summary, recentUpdate } from "@/lib/mock-data";
-
-const PRODUCTION_FILTERS = ["All", "On track", "At risk", "Shipping"] as const;
 
 export default async function PipelinePage() {
   // Project rows are read through the DashboardSource adapter (fixture today,
   // live later) so flipping data sources is a single env change. The summary
   // aggregates + recentUpdate banner remain derived presentation data.
+  //
+  // All projects are fetched on the server and handed to the client-side
+  // OwnerFilterToggle, which defaults to the signed-in user's own pipeline with
+  // a visible "All team" toggle (privacy waived per the design spec).
   const projects = await getSource().getProjects();
 
   return (
@@ -52,18 +53,7 @@ export default async function PipelinePage() {
           />
         </div>
 
-        <div className="mb-3 mt-1 flex items-center justify-between">
-          <h3 className="font-display text-base font-bold text-ink">
-            In production
-          </h3>
-          <FilterChips filters={PRODUCTION_FILTERS} />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
-          ))}
-        </div>
+        <OwnerFilterToggle projects={projects} />
 
         <UpdateToast message={recentUpdate} />
       </main>
