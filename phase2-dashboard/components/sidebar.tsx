@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandMark } from "./brand-mark";
+import { useCurrentUser } from "./current-user-provider";
+import type { SessionUser } from "@/lib/session-user";
 
 interface NavItem {
   label: string;
@@ -60,8 +62,42 @@ function Section({ label }: { label: string }) {
   );
 }
 
-export function Sidebar() {
+/**
+ * The signed-in user shown in the profile slot. When omitted (no session /
+ * signed-out) the slot renders a neutral "Not signed in" placeholder rather
+ * than hardcoded identity.
+ */
+function ProfileSlot({ user }: { user?: SessionUser | null }) {
+  return (
+    <div className="mt-auto flex items-center gap-[10px] border-t border-white/15 px-2 py-[10px]">
+      <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white font-display text-[0.76rem] font-bold text-purple-deep">
+        {user?.initials ?? "—"}
+      </span>
+      <span className="min-w-0 text-sm leading-tight">
+        {user ? (
+          <>
+            <span className="block truncate">{user.name}</span>
+            <small className="text-[0.7rem] text-white/55">{user.role}</small>
+          </>
+        ) : (
+          <>
+            Not signed in
+            <br />
+            <small className="text-[0.7rem] text-white/55">—</small>
+          </>
+        )}
+      </span>
+    </div>
+  );
+}
+
+export function Sidebar({ user }: { user?: SessionUser | null }) {
   const pathname = normalizePath(usePathname());
+  // An explicit `user` prop wins (handy for tests/storybook); otherwise fall
+  // back to the user the root layout resolved on the server and shared via
+  // context.
+  const contextUser = useCurrentUser();
+  const effectiveUser = user !== undefined ? user : contextUser;
 
   return (
     <aside className="flex w-[212px] flex-none flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[22px] text-white">
@@ -84,16 +120,7 @@ export function Sidebar() {
         <Item key={i.label} item={i} active={false} />
       ))}
 
-      <div className="mt-auto flex items-center gap-[10px] border-t border-white/15 px-2 py-[10px]">
-        <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white font-display text-[0.76rem] font-bold text-purple-deep">
-          JZ
-        </span>
-        <span className="text-sm leading-tight">
-          Joe Zink
-          <br />
-          <small className="text-[0.7rem] text-white/55">Sales</small>
-        </span>
-      </div>
+      <ProfileSlot user={effectiveUser} />
     </aside>
   );
 }
