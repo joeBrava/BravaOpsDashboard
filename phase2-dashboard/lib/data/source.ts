@@ -1,5 +1,6 @@
 import type { Project, ProjectDetail } from "@/lib/types";
 import type { Invoice } from "@/lib/invoices";
+import { getDataSourceMode } from "@/lib/env";
 import { FixtureSource } from "./fixture-source";
 
 /**
@@ -22,31 +23,16 @@ export interface DashboardSource {
 }
 
 /**
- * Resolved data-source mode.
- *
- * NOTE: Task A2 introduces the canonical `getDataSourceMode()` in `lib/env.ts`
- * (typed env access, auto-degrade to fixture when tokens are absent). Until that
- * lands and `getSource()` is rewired to import it, we resolve the mode locally
- * from `DATA_SOURCE` and only ever build a fixture source here — `LiveSource`
- * is wired into the selector in Task B4.
- */
-type DataSourceMode = "fixture" | "live";
-
-function resolveMode(): DataSourceMode {
-  return process.env.DATA_SOURCE === "live" ? "live" : "fixture";
-}
-
-/**
  * Returns the active `DashboardSource`.
  *
- * For now this always returns a fixture-backed source (LiveSource is added in
- * Task B4; the `FixtureSource` concrete class — `lib/data/fixture-source.ts` —
- * is wired in here as of Task A4). `getSource()` keeps a stable signature so
- * the live branch can be added in B4 without touching callers.
+ * The mode comes from `getDataSourceMode()` (lib/env.ts), which reports "live"
+ * only when DATA_SOURCE=live AND both API tokens are present. `LiveSource` is
+ * wired into the live branch in Task B4; until then every mode resolves to
+ * fixtures. `getSource()` keeps a stable signature so callers never change.
  */
 export function getSource(): DashboardSource {
-  // mode is resolved up front so the live branch can be wired in B4 without
-  // changing this signature; today every mode resolves to fixtures.
-  void resolveMode();
+  // Resolved up front so the live branch can be wired in B4 without touching
+  // this signature. Today both modes return fixtures.
+  void getDataSourceMode();
   return new FixtureSource();
 }
