@@ -27,13 +27,13 @@ export default async function InvoicesPage() {
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />
 
-      <main className="flex-1 bg-cream px-[26px] py-[22px]">
+      <main className="flex-1 bg-cream px-4 pb-[22px] pt-[72px] sm:px-[26px] lg:pt-[22px]">
         <Topbar
           title="Invoices"
           sub={`Tuesday, June 2 · ${invoiceSummary.overdue} overdue`}
         />
 
-        <div className="mb-[22px] grid grid-cols-3 gap-[14px]">
+        <div className="mb-[22px] grid grid-cols-1 gap-[14px] sm:grid-cols-3">
           <StatCard
             value={formatUsd(invoiceSummary.outstanding)}
             label="Outstanding"

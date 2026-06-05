@@ -20,13 +20,13 @@ export default async function PipelinePage() {
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />
 
-      <main className="flex-1 bg-cream px-[26px] py-[22px]">
+      <main className="flex-1 bg-cream px-4 pb-[22px] pt-[72px] sm:px-[26px] lg:pt-[22px]">
         <Topbar
           title="Production Pipeline"
           sub={`Tuesday, June 2 · ${summary.inProduction} in production`}
         />
 
-        <div className="mb-[22px] grid grid-cols-4 gap-[14px]">
+        <div className="mb-[22px] grid grid-cols-2 gap-[14px] lg:grid-cols-4">
           <StatCard
             value={String(summary.inProduction)}
             label="In production"

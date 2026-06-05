@@ -16,7 +16,7 @@ export default function SettingsPage() {
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />
 
-      <main className="flex-1 bg-cream px-[26px] py-[22px]">
+      <main className="flex-1 bg-cream px-4 pb-[22px] pt-[72px] sm:px-[26px] lg:pt-[22px]">
         <div className="mb-5">
           <h2 className="font-display text-2xl font-extrabold tracking-[-0.02em] text-ink">
             Settings

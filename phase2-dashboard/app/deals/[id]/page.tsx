@@ -52,7 +52,7 @@ export default async function DealDetailPage({
     <div className="mx-auto flex min-h-screen max-w-[1180px]">
       <Sidebar />
 
-      <main className="flex-1 bg-cream px-[26px] py-[22px]">
+      <main className="flex-1 bg-cream px-4 pb-[22px] pt-[72px] sm:px-[26px] lg:pt-[22px]">
         {/* Breadcrumb back to the pipeline */}
         <Link
           href="/"

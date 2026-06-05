@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandMark } from "./brand-mark";
@@ -25,7 +26,15 @@ function normalizePath(path: string): string {
   return path.length > 1 ? path.replace(/\/$/, "") : path;
 }
 
-function Item({ item, active }: { item: NavItem; active: boolean }) {
+function Item({
+  item,
+  active,
+  onNavigate,
+}: {
+  item: NavItem;
+  active: boolean;
+  onNavigate?: () => void;
+}) {
   const className = `mb-[3px] flex items-center gap-[11px] rounded-[10px] px-3 py-[10px] text-sm font-medium ${
     active ? "bg-white/15 font-semibold text-white" : "text-white/80"
   }`;
@@ -46,7 +55,7 @@ function Item({ item, active }: { item: NavItem; active: boolean }) {
   );
 
   return item.href ? (
-    <Link href={item.href} className={className}>
+    <Link href={item.href} className={className} onClick={onNavigate}>
       {inner}
     </Link>
   ) : (
@@ -91,16 +100,23 @@ function ProfileSlot({ user }: { user?: SessionUser | null }) {
   );
 }
 
-export function Sidebar({ user }: { user?: SessionUser | null }) {
-  const pathname = normalizePath(usePathname());
-  // An explicit `user` prop wins (handy for tests/storybook); otherwise fall
-  // back to the user the root layout resolved on the server and shared via
-  // context.
-  const contextUser = useCurrentUser();
-  const effectiveUser = user !== undefined ? user : contextUser;
-
+/**
+ * The shared nav body (brand lockup + sections + profile slot). Rendered both in
+ * the static desktop rail and inside the mobile off-canvas drawer so the two can
+ * never drift. `onNavigate` lets the mobile drawer close itself when a link is
+ * tapped.
+ */
+function NavBody({
+  pathname,
+  user,
+  onNavigate,
+}: {
+  pathname: string;
+  user?: SessionUser | null;
+  onNavigate?: () => void;
+}) {
   return (
-    <aside className="flex w-[212px] flex-none flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[22px] text-white">
+    <>
       <div className="mb-[30px] flex items-center gap-[10px] pl-1 font-display text-[1.05rem] font-extrabold">
         <BrandMark />
         Biz Bricks
@@ -112,6 +128,7 @@ export function Sidebar({ user }: { user?: SessionUser | null }) {
           key={i.label}
           item={i}
           active={i.href != null && normalizePath(i.href) === pathname}
+          onNavigate={onNavigate}
         />
       ))}
 
@@ -121,10 +138,114 @@ export function Sidebar({ user }: { user?: SessionUser | null }) {
           key={i.label}
           item={i}
           active={i.href != null && normalizePath(i.href) === pathname}
+          onNavigate={onNavigate}
         />
       ))}
 
-      <ProfileSlot user={effectiveUser} />
-    </aside>
+      <ProfileSlot user={user} />
+    </>
+  );
+}
+
+/**
+ * App navigation.
+ *
+ * Desktop (>= lg) renders the unchanged static purple rail: a `flex-none`
+ * 212px-wide column that participates in the page's flex row exactly as before.
+ *
+ * Below lg the static rail is hidden and replaced by a fixed top bar with a
+ * hamburger toggle that opens an off-canvas drawer (same nav body). The drawer
+ * closes when a nav link is tapped, on Escape, and on backdrop tap. All
+ * breakpoints share one `NavBody` so the menu can never drift between layouts.
+ * This stays a `'use client'` component because the drawer is interactive state.
+ */
+export function Sidebar({ user }: { user?: SessionUser | null }) {
+  const pathname = normalizePath(usePathname());
+  // An explicit `user` prop wins (handy for tests/storybook); otherwise fall
+  // back to the user the root layout resolved on the server and shared via
+  // context.
+  const contextUser = useCurrentUser();
+  const effectiveUser = user !== undefined ? user : contextUser;
+
+  const [open, setOpen] = useState(false);
+
+  // The drawer closes when a nav link inside it is tapped (each Item calls
+  // `onNavigate`), so it never lingers after an in-app navigation. While open,
+  // the page behind is covered by the backdrop, so drawer links are the only
+  // reachable in-app navigation.
+
+  // Close on Escape while the drawer is open.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <>
+      {/* Desktop rail — unchanged from the original layout, just gated to lg+. */}
+      <aside className="hidden w-[212px] flex-none flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[22px] text-white lg:flex">
+        <NavBody pathname={pathname} user={effectiveUser} />
+      </aside>
+
+      {/* Mobile top bar — fixed, full width, hidden at lg+. */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-[56px] items-center justify-between bg-gradient-to-r from-purple-deep to-[#52218c] px-4 text-white lg:hidden">
+        <div className="flex items-center gap-[10px] font-display text-[1.02rem] font-extrabold">
+          <BrandMark />
+          Biz Bricks
+        </div>
+        <button
+          type="button"
+          aria-label="Open navigation menu"
+          aria-expanded={open}
+          aria-controls="mobile-nav-drawer"
+          onClick={() => setOpen(true)}
+          className="flex h-9 w-9 flex-col items-center justify-center gap-[4px] rounded-[9px] bg-white/15"
+        >
+          <span aria-hidden className="h-[2px] w-[18px] rounded bg-white" />
+          <span aria-hidden className="h-[2px] w-[18px] rounded bg-white" />
+          <span aria-hidden className="h-[2px] w-[18px] rounded bg-white" />
+        </button>
+      </header>
+
+      {/* Mobile off-canvas drawer + backdrop. Rendered only when open so closed
+          state never traps focus or intercepts taps. */}
+      {open && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <button
+            type="button"
+            aria-label="Close navigation overlay"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 h-full w-full bg-ink/45"
+          />
+          <aside
+            id="mobile-nav-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation"
+            className="absolute left-0 top-0 flex h-full w-[256px] max-w-[80%] flex-col bg-gradient-to-b from-purple-deep to-[#52218c] px-4 py-[18px] text-white shadow-2xl"
+          >
+            <div className="mb-2 flex justify-end">
+              <button
+                type="button"
+                aria-label="Close navigation menu"
+                onClick={() => setOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-white/15 text-lg leading-none text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <NavBody
+              pathname={pathname}
+              user={effectiveUser}
+              onNavigate={() => setOpen(false)}
+            />
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
