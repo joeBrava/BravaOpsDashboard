@@ -3,6 +3,7 @@ import { Topbar } from "@/components/topbar";
 import { StatCard } from "@/components/stat-card";
 import { FilterChips } from "@/components/filter-chips";
 import { InvoiceCard } from "@/components/invoice-card";
+import { EmptyState } from "@/components/empty-state";
 import { getSource } from "@/lib/data/source";
 import { invoiceSummary, formatUsd } from "@/lib/invoices";
 import { dealHref, projectIdForDealName } from "@/lib/deal-link";
