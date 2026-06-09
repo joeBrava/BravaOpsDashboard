@@ -1,54 +1,51 @@
 # Status
 
-**Updated:** 2026-06-02
+**Updated:** 2026-06-09
 
 ## Current state
 
-**Phase 1:** Brainstorming complete. Design in progress. Not yet specced or built.
+**Phase 2 — Web dashboard: BUILT** (server-rendered). Implemented on branch
+`feat/phase2-live-server-dashboard` and merged to `main`. Runs locally on fixtures
+with auth bypassed; live data + real auth are config + credentials away.
 
-**Phase 2:** Brainstorming complete. Design deferred until Phase 1 ships.
+**Phase 1 — Payment tracking + Slack DMs:** still out of scope here (separate n8n
+effort). Notification toggles appear in `/settings` but are inert ("Arrives with Phase 1").
 
-## Decisions locked
+## What's done (Phase 2)
 
-- Phase 1 first, then Phase 2 (sequential, not parallel)
-- Per-salesperson Slack DMs, not channel-wide digest
-- Admin-toggleable opt-in for notifications (settings table somewhere)
-- Real-time payment alerts default ON for deal owner
-- Daily digest opt-in per salesperson
-- Sales Manager gets all-team digest variant
-- Web dashboard for Phase 2 (not Airtable/Retool/Slack canvas)
-- Tech stack: Next.js + Tailwind + shadcn + Supabase + Vercel + Clerk/NextAuth
+- **Server conversion** — dropped static export / GitHub Pages; now a Node Next.js
+  server (Vercel/local). Next.js 16.2.7 + React 19 + Tailwind v4.
+- **Read-only data adapter** — `DashboardSource` with `FixtureSource` (default) and
+  `LiveSource` (HubSpot + Teamwork read clients ported from `bb-bridge`), selected by
+  `DATA_SOURCE`; auto-falls back to fixtures when tokens are absent.
+- **Mappers + stage-map** — HubSpot deal / Teamwork project → dashboard types, fully unit-tested.
+- **Auth** — Auth.js v5 Google SSO, domain-locked to `buildbrava.com`; `proxy.ts` route gate; `AUTH_DISABLED` dev bypass.
+- **Pages** — Pipeline (owner filter), Invoices, Deal detail (`/deals/[id]`), Settings (persisted prefs), Sign-in.
+- **Polish** — responsive layout, loading/error/empty states, jsdom component tests.
+- **Verification** — 170 tests passing, tsc clean, lint clean, `next build` green (all routes).
 
-## Open questions
+## Needs YOU (to go from fixtures → production)
 
-### Phase 1
-- [ ] Where does the admin settings table live? (n8n Data Table vs Airtable vs Google Sheet vs HubSpot user property)
-- [ ] What exactly is in the daily per-person digest? (mock + Sales Manager review needed)
-- [ ] What HubSpot deal properties need to be created/used for payment status writeback?
-- [ ] QBO webhook architecture: Invoice entity subscription vs Payment entity vs both?
-- [ ] How to map HubSpot owner email → Slack user ID (manual map vs Slack lookup vs HubSpot integration)
-- [ ] Should "yesterday's payments" appear in the digest, or only in the real-time alert moment?
-- [ ] Do we want a CDC-polling fallback in case a webhook event is missed?
+1. Add read-only API tokens to `phase2-dashboard/.env.local` and set `DATA_SOURCE=live`
+   (`HUBSPOT_API_TOKEN`, `TEAMWORK_API_TOKEN`; 1Password refs in `.env.example`).
+2. Create a Google OAuth client; set `AUTH_SECRET` + `GOOGLE_CLIENT_ID/SECRET`, unset `AUTH_DISABLED`.
+3. Deploy to Vercel and **swap the JSON prefs store** for Postgres / Vercel KV behind
+   the `PreferencesStore` interface (serverless FS is ephemeral).
 
-### Phase 2
-- [ ] Auth provider: Clerk vs NextAuth + Google SSO
-- [ ] Brand/visual direction — any Brava brand guide to follow?
-- [ ] Mobile responsive requirements?
-- [ ] What does the per-deal detail page actually show?
-- [ ] Sales Manager view: same UI with extra filters, or separate dedicated view?
-- [ ] Should the dashboard be embeddable inside HubSpot via app cards?
-- [ ] Hosting: Vercel free tier OK, or do we need custom domain + SSL from day 1?
+## Refine against live data (best-effort assumptions, isolated in the mapper)
 
-## Next actions
+- Teamwork tasklist/milestone → the 5 production stages (`lib/data/stage-map.ts`).
+- Invoice paid status (`lib/data/mappers.ts`) — derived from `dealstage`/`qbo_invoice_id`/`amount`
+  until Phase 1 creates real `qbo_*_invoice_paid_at` properties.
 
-1. Walk through Phase 1 design → write spec to `docs/`
-2. Sales Manager validation pass on Phase 1 digest mock
-3. Build Phase 1 in n8n (extends existing `JA1et0DT7LnLEtdE` workflow OR new workflow — TBD)
-4. Ship Phase 1, run it for a few weeks, observe what sales actually does with it
-5. Phase 2 design kickoff (revisit dashboard requirements based on Phase 1 usage data)
+## Docs
+
+- Spec: `docs/superpowers/specs/2026-06-05-phase2-live-server-dashboard-design.md`
+- Plan: `docs/superpowers/plans/2026-06-05-phase2-live-server-dashboard.md`
+- Run/deploy: `phase2-dashboard/README.md`
+- Permissions setup (optional bypass + deny-rules): `docs/SECURITY-permissions-setup.md`
 
 ## Related projects in BBProjects/
 
-- `n8nAutomations/` — existing n8n workflow infrastructure; Phase 1 extends this
-- `QBO2Hubspot/` — M1 sandbox orchestrator (reference for QBO API patterns)
-- `Hubspot2Teamwork/` — pre-MVP project; some patterns reusable
+- `bb-bridge/` — source of the reusable read-only HubSpot/Teamwork clients.
+- `n8nAutomations/`, `Hubspot2Teamwork/` — Phase 1 / sync infrastructure (separate).
