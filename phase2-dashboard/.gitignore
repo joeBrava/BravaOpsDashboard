@@ -20,6 +20,10 @@
 # production
 /build
 
+# local preferences store (JsonPreferencesStore) — never commit user prefs;
+# production uses a durable backend (Postgres/Vercel KV) behind PreferencesStore
+/data/
+
 # misc
 .DS_Store
 *.pem
