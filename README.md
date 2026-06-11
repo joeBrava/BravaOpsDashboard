@@ -15,27 +15,28 @@ Replace Joe's daily QBO check + manual Teamwork invoice-tracking project. Give e
 ### Phase 1 — Payment tracking + Slack DMs (1–2 weeks)
 Self-contained value. Detects invoice payments in QBO, writes status back to HubSpot deal properties, sends per-deal-owner Slack DMs in real time. Admin-toggleable per salesperson.
 
-- See `phase1-payments/` for implementation
+- See `phase1-payments/` for the design + roadmap (not yet built — a separate n8n effort)
 - See `docs/` for spec + design notes
 
 ### Phase 2 — Web dashboard (4–6 weeks)
 A polished, branded web app for the sales team. Per-user authenticated view of their deals with full project timelines, invoices, and Teamwork milestone progression. Sales Manager gets all-team view.
 
 - See `phase2-dashboard/` for implementation
-- Built on top of the data foundation laid in Phase 1
+- **Built** (server-rendered, runs on fixtures today) — live HubSpot/Teamwork data + Google SSO are config away. See `STATUS.md`.
 
-## Tech stack (Phase 2)
+## Tech stack (Phase 2, as shipped)
 
 | Layer | Pick |
 |---|---|
-| Framework | Next.js (App Router) |
-| Styling | Tailwind CSS |
-| Components | shadcn/ui |
-| Animations | Framer Motion |
-| Auth | Clerk *or* NextAuth + Google SSO |
-| Database | Supabase (Postgres) |
-| Hosting | Vercel |
-| Data sync | n8n cron workflow → Supabase |
+| Framework | Next.js 16 (App Router) + React 19 |
+| Styling | Tailwind CSS v4 |
+| Components | Hand-built React components |
+| Auth | Auth.js (NextAuth v5) + Google SSO, domain-locked to `buildbrava.com` |
+| Data access | Read-only HubSpot + Teamwork API clients via `DashboardSource` (fixtures by default; live with `DATA_SOURCE=live`) |
+| Preferences | JSON-file store behind a `PreferencesStore` interface (swap for Postgres / Vercel KV in prod) |
+| Hosting | Vercel (Node server) |
+
+> Originally planned but **not** part of the shipped build: shadcn/ui, Framer Motion, Supabase, and the n8n → Supabase sync. See `STATUS.md` for the full current state.
 
 ## Constraints & decisions (locked)
 

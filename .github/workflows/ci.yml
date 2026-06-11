@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Quality gate only. Actual deploys are handled by Vercel's GitHub integration
+# (the app is a Node server now, not a static export — there is nothing to push
+# to GitHub Pages).
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: phase2-dashboard
+    env:
+      # Lint/test/build on fixtures with auth bypassed — no secrets needed in CI.
+      # Mirrors the documented local-dev defaults in phase2-dashboard/.env.example.
+      DATA_SOURCE: fixture
+      AUTH_DISABLED: "true"
+      AUTH_SECRET: ci-placeholder-not-used-when-auth-disabled
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: phase2-dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
